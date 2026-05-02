@@ -20,13 +20,13 @@ class KnowledgeRepository:
 
     def _init_db(self):
         """
-        Inicializa la tabla de conocimiento con soporte para vectores.
+        Inicializa la tabla de conocimiento con soporte para vectores de tamaño fijo (384).
         """
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS knowledge (
                 id INTEGER PRIMARY KEY,
                 content TEXT,
-                embedding FLOAT[]
+                embedding FLOAT[384]
             )
         """)
 
@@ -52,7 +52,7 @@ class KnowledgeRepository:
         
         # Usamos array_cosine_similarity de DuckDB para la búsqueda vectorial
         result = self.conn.execute("""
-            SELECT content, array_cosine_similarity(embedding, ?::FLOAT[]) as similarity
+            SELECT content, array_cosine_similarity(embedding, ?::FLOAT[384]) as similarity
             FROM knowledge
             ORDER BY similarity DESC
             LIMIT ?
