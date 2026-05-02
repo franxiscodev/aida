@@ -9,7 +9,9 @@ dependencies = [
     "duckdb>=1.5.2",
     "fastapi>=0.136.1",
     "google-cloud-dialogflow>=2.47.0",
+    "pypdf>=6.10.2",
     "python-dotenv>=1.2.2",
+    "sentence-transformers>=5.4.1",
     "uvicorn>=0.46.0",
 ]
 
