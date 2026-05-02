@@ -59,11 +59,12 @@ async def dialogflow_webhook(payload: DialogflowRequest):
         
         # Log básico para depuración
         session_id = session_full.split("/")[-1]
-        print(f"Recibida intención '{intent_name}' para la sesión {session_id}")
+        print(f"Procesando intención: {intent_name}")
+        print(f"Sesión: {session_id}")
 
         respuesta_voz = ""
 
-        if intent_name == "validar_documento":
+        if intent_name == "Validar DUA":
             # Si el usuario no proporciona una ruta, usamos el archivo de ejemplo por defecto
             file_path = parameters.get("file_path", "data/raw/ejemplo_dua_07.00.pdf")
             
