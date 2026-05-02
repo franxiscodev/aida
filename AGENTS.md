@@ -23,3 +23,6 @@ Eres un experto en Arquitectura Hexagonal y Comercio Exterior español. Tu misi�
 - Cada vez que completes una tarea lógica (ej. crear el adaptador de DuckDB), realiza un commit descriptivo.
 - Usa prefijos convencionales: `feat:` para nuevas funciones, `fix:` para errores, `docs:` para documentación.
 
+- **Branching Policy**: NUNCA trabajes directamente en `main`. 
+- Crea ramas `feat/nombre-tarea` para cada componente.
+- Realiza un Pull Request (o fusión manual controlada) solo cuando el componente esté testeado.
