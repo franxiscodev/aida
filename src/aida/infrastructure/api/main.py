@@ -24,7 +24,7 @@ class DialogflowRequest(BaseModel):
     Esto permite que Swagger UI muestre un JSON editable.
     """
     queryResult: QueryResultModel
-    session: str
+    session: Optional[str] = None
 
 app = FastAPI(
     title="AIDA - Asistente Inteligente de Despacho Aduanero",
@@ -55,7 +55,7 @@ async def dialogflow_webhook(payload: DialogflowRequest):
         # Extraemos datos del modelo validado por Pydantic
         intent_name = payload.queryResult.intent.displayName
         parameters = payload.queryResult.parameters
-        session_full = payload.session
+        session_full = payload.session or "projects/aida/agent/sessions/session-id-local"
         
         # Log básico para depuración
         session_id = session_full.split("/")[-1]
