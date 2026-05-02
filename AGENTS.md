@@ -26,3 +26,10 @@ Eres un experto en Arquitectura Hexagonal y Comercio Exterior español. Tu misi�
 - **Branching Policy**: NUNCA trabajes directamente en `main`. 
 - Crea ramas `feat/nombre-tarea` para cada componente.
 - Realiza un Pull Request (o fusión manual controlada) solo cuando el componente esté testeado.
+
+## Project Status
+- [x] **Infraestructura Base**: FastAPI, DuckDB y Azure OCR configurados.
+- [x] **Sistema RAG**: Ingesta del Manual del Exportador y búsqueda vectorial operativa.
+- [x] **Orquestación**: Flujo completo OCR -> RAG funcional en `AidaOrchestrator`.
+- [ ] **API Endpoints**: Pendiente exponer validación vía HTTP.
+- [ ] **Integración Dialogflow**: Pendiente Webhook para conversación.

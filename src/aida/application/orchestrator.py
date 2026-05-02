@@ -12,12 +12,12 @@ class AidaOrchestrator:
     Orquestador principal de AIDA. Coordina el OCR, la búsqueda de conocimiento (RAG)
     y la generación de informes de validación.
     """
-    def __init__(self):
+    def __init__(self, read_only: bool = False):
         self.ocr_adapter = AzureOCRAdapter()
-        self.knowledge_repo = KnowledgeRepository()
+        self.knowledge_repo = KnowledgeRepository(read_only=read_only)
         
         # Lista de siglas técnicas a buscar en el Manual del Exportador
-        self.technical_acronyms = ["CUD", "REOCE", "SOIVRE", "EUR.1", "L.EXP", "RCEP", "DV1"]
+        self.technical_acronyms = ["CUD", "REOCE", "SOIVRE", "EUR.1", "L.EXP", "RCEP", "DV1", "EUROPEA", "EXPEDIDOR"]
 
     def validate_dua(self, file_path: str) -> ValidationReport:
         """

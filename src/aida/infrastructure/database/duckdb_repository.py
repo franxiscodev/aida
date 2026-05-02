@@ -8,17 +8,19 @@ class KnowledgeRepository:
     """
     Adaptador de persistencia para el conocimiento técnico usando DuckDB como base de datos vectorial.
     """
-    def __init__(self, db_path: str = None):
+    def __init__(self, db_path: str = None, read_only: bool = False):
         if db_path is None:
             db_path = os.getenv("DATABASE_PATH", "data/vector_db/aida_knowledge.db")
         self.db_path = db_path
+        self.read_only = read_only
         # Asegurar que el directorio de la base de datos existe
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         
-        self.conn = duckdb.connect(self.db_path)
+        self.conn = duckdb.connect(self.db_path, read_only=self.read_only)
         # Cargamos un modelo ligero para embeddings locales
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self._init_db()
+        if not self.read_only:
+            self._init_db()
 
     def _init_db(self):
         """
