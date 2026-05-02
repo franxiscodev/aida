@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 import os
 
@@ -8,10 +10,28 @@ from aida.infrastructure.adapters.azure_voice_adapter import AzureVoiceAdapter
 # Cargar variables de entorno al inicio
 load_dotenv()
 
+# Modelos Pydantic para Dialogflow ES
+class IntentModel(BaseModel):
+    displayName: str
+
+class QueryResultModel(BaseModel):
+    intent: IntentModel
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+
+class DialogflowRequest(BaseModel):
+    """
+    Modelo estructurado para las peticiones de Dialogflow ES.
+    Esto permite que Swagger UI muestre un JSON editable.
+    """
+    queryResult: QueryResultModel
+    session: str
+
 app = FastAPI(
     title="AIDA - Asistente Inteligente de Despacho Aduanero",
     description="API para la validación de documentos DUA usando RAG y el Manual del Exportador.",
-    version="0.1.0"
+    version="0.1.0",
+    # El root_path es útil cuando se despliega detrás de proxies como ngrok
+    root_path=os.getenv("ROOT_PATH", "")
 )
 
 # Inicializamos el orquestador y el adaptador de voz
@@ -27,18 +47,17 @@ async def health_check():
     }
 
 @app.post("/webhook")
-async def dialogflow_webhook(request: Request):
+async def dialogflow_webhook(payload: DialogflowRequest):
     """
     Webhook para Dialogflow ES. Procesa intenciones de validación de documentos.
     """
     try:
-        data = await request.json()
-        query_result = data.get("queryResult", {})
-        intent_name = query_result.get("intent", {}).get("displayName")
-        parameters = query_result.get("parameters", {})
+        # Extraemos datos del modelo validado por Pydantic
+        intent_name = payload.queryResult.intent.displayName
+        parameters = payload.queryResult.parameters
+        session_full = payload.session
         
         # Log básico para depuración
-        session_full = data.get("session", "unknown")
         session_id = session_full.split("/")[-1]
         print(f"Recibida intención '{intent_name}' para la sesión {session_id}")
 
