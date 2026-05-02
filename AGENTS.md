@@ -18,3 +18,8 @@ Eres un experto en Arquitectura Hexagonal y Comercio Exterior español. Tu misi�
 - Implementa los adaptadores en `infrastructure/adapters/`.
 - Mantén la lógica de validación de aduanas en `domain/`.
 - Las respuestas del bot deben ser aptas para voz (naturales y concisas).
+
+## Git Workflow
+- Cada vez que completes una tarea lógica (ej. crear el adaptador de DuckDB), realiza un commit descriptivo.
+- Usa prefijos convencionales: `feat:` para nuevas funciones, `fix:` para errores, `docs:` para documentación.
+
