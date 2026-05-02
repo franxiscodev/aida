@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 
 from aida.application.orchestrator import AidaOrchestrator
+from aida.infrastructure.adapters.azure_voice_adapter import AzureVoiceAdapter
 
 # Cargar variables de entorno al inicio
 load_dotenv()
@@ -13,8 +14,9 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Inicializamos el orquestador en modo lectura para el Webhook
+# Inicializamos el orquestador y el adaptador de voz
 orchestrator = AidaOrchestrator(read_only=True)
+voice_adapter = AzureVoiceAdapter()
 
 @app.get("/health")
 async def health_check():
@@ -36,45 +38,52 @@ async def dialogflow_webhook(request: Request):
         parameters = query_result.get("parameters", {})
         
         # Log básico para depuración
-        session = data.get("session", "unknown")
-        print(f"Recibida intención '{intent_name}' para la sesión {session}")
+        session_full = data.get("session", "unknown")
+        session_id = session_full.split("/")[-1]
+        print(f"Recibida intención '{intent_name}' para la sesión {session_id}")
+
+        respuesta_voz = ""
 
         if intent_name == "validar_documento":
             # Si el usuario no proporciona una ruta, usamos el archivo de ejemplo por defecto
             file_path = parameters.get("file_path", "data/raw/ejemplo_dua_07.00.pdf")
             
             if not os.path.exists(file_path):
-                return {
-                    "fulfillmentText": f"Lo siento, no he podido encontrar el archivo en la ruta especificada."
-                }
-
-            # Ejecutamos la validación RAG
-            report = orchestrator.validate_dua(file_path)
-            
-            if report.resultados:
-                # Generamos una respuesta natural para voz
-                num_hallazgos = len(report.resultados)
-                first_result = report.resultados[0]
-                
-                respuesta_voz = (
-                    f"He analizado el documento con éxito. He detectado {num_hallazgos} puntos "
-                    f"técnicos que requieren su atención según el Manual del Exportador. "
-                    f"Por ejemplo, en la {first_result.campo}, se ha identificado {first_result.mensaje[:150]}. "
-                    f"¿Desea que le detalle algún otro punto o que genere el informe final?"
-                )
+                respuesta_voz = "Lo siento, no he podido encontrar el archivo en la ruta especificada."
             else:
-                respuesta_voz = (
-                    "He revisado el documento por completo y no he detectado ninguna sigla "
-                    "técnica que requiera una validación especial según los criterios del Manual. "
-                    "El documento parece estar en orden para su despacho."
-                )
+                # Ejecutamos la validación RAG
+                report = orchestrator.validate_dua(file_path)
+                
+                if report.resultados:
+                    num_hallazgos = len(report.resultados)
+                    first_result = report.resultados[0]
+                    
+                    respuesta_voz = (
+                        f"He analizado el documento con éxito. He detectado {num_hallazgos} puntos "
+                        f"técnicos que requieren su atención según el Manual del Exportador. "
+                        f"Por ejemplo, en la {first_result.campo}, se ha identificado {first_result.mensaje[:150]}. "
+                        f"¿Desea que le detalle algún otro punto o que genere el informe final?"
+                    )
+                else:
+                    respuesta_voz = (
+                        "He revisado el documento por completo y no he detectado ninguna sigla "
+                        "técnica que requiera una validación especial según los criterios del Manual. "
+                        "El documento parece estar en orden para su despacho."
+                    )
 
-            return {
-                "fulfillmentText": respuesta_voz
-            }
+        else:
+            respuesta_voz = f"He recibido la intención {intent_name}, pero aún estoy aprendiendo a gestionarla."
+
+        # Generar audio de la respuesta si el servicio de voz está configurado
+        if respuesta_voz:
+            audio_filename = f"response_{session_id}.wav"
+            try:
+                voice_adapter.speak(respuesta_voz, output_filename=audio_filename)
+            except Exception as e:
+                print(f"Error generando audio: {str(e)}")
 
         return {
-            "fulfillmentText": f"He recibido la intención {intent_name}, pero aún estoy aprendiendo a gestionarla."
+            "fulfillmentText": respuesta_voz
         }
 
     except Exception as e:
