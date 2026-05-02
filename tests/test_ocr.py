@@ -28,17 +28,17 @@ def test_ocr_extraction():
         print(f"\n[ERROR] No se encuentra el archivo de prueba en: {file_path}")
         return
 
-    print(f"\n--- Iniciando análisis OCR de: {file_path} ---")
+    print(f"\n--- Iniciando analisis OCR de: {file_path} ---")
     try:
         entries = adapter.analyze_dua(file_path)
-        print(f"✅ Éxito: Se han extraído {len(entries)} elementos del DUA.")
+        print(f"Exito: Se han extraido {len(entries)} elementos del DUA.")
         
-        print("\nPrimeros 5 elementos extraídos:")
+        print("\nPrimeros 5 elementos extraidos:")
         for entry in entries[:5]:
             print(f" - Casilla {entry.casilla}: {entry.valor}")
             
     except Exception as e:
-        print(f"\n❌ Error durante el proceso de OCR: {str(e)}")
+        print(f"\nError durante el proceso de OCR: {str(e)}")
 
 if __name__ == "__main__":
     test_ocr_extraction()
