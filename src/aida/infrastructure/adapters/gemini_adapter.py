@@ -24,9 +24,9 @@ class GeminiAdapter:
         else:
             try:
                 genai.configure(api_key=api_key)
-                # Usamos la versión latest para evitar problemas de disponibilidad
-                self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
-                print("[DEBUG] Gemini 1.5 Flash (Latest) inicializado correctamente.")
+                # Usamos el alias genérico 'gemini-flash-latest' que está disponible en la lista
+                self.model = genai.GenerativeModel('models/gemini-flash-latest')
+                print("[DEBUG] Gemini Flash (Latest) inicializado correctamente.")
             except Exception as e:
                 self.model = None
                 print(f"[ERROR] Error al configurar Gemini: {str(e)}")
