@@ -117,6 +117,8 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
         elif intent_name == "Informar Código REOCE":
             # Extraemos el parámetro Código Aduanero de Dialogflow
             codigo = parameters.get("CodigoAduanero", "")
+            print(f"[DEBUG] Código Aduanero extraído: '{codigo}'")
+            
             if not codigo:
                 respuesta_voz = "Por favor, indícame el código REOCE que deseas consultar."
             else:
