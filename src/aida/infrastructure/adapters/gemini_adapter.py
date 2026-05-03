@@ -60,11 +60,11 @@ class GeminiAdapter:
         )
 
         try:
-            # Aumentamos ligeramente max_output_tokens para evitar cortes abruptos
+            # Aumentamos max_output_tokens a 500 para evitar cortes abruptos
             response = self.model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=400,
+                    max_output_tokens=500,
                     temperature=0.3
                 )
             )
@@ -91,10 +91,11 @@ class GeminiAdapter:
         )
 
         try:
+            # Aumentamos max_output_tokens a 500 para evitar cortes abruptos
             response = self.model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=300,
+                    max_output_tokens=500,
                     temperature=0.6
                 )
             )
