@@ -69,9 +69,9 @@ async def dialogflow_webhook(payload: DialogflowRequest):
         parameters = payload.queryResult.parameters
         session_full = payload.session or "projects/aida/agent/sessions/session-id-local"
         
-        # Log básico para depuración
+        # Log básico para depuración (Demo en vivo)
         session_id = session_full.split("/")[-1]
-        print(f"Procesando intención: {intent_name}")
+        print(f"Intent detectado: {intent_name}")
         print(f"Sesión: {session_id}")
 
         respuesta_voz = ""
@@ -103,14 +103,11 @@ async def dialogflow_webhook(payload: DialogflowRequest):
                         "El documento parece estar en orden para su despacho."
                     )
 
-        elif intent_name == "Consulta Sigla":
-            # El usuario pregunta por una sigla específica (ej: ¿Qué es el CUD?)
-            acronym = parameters.get("sigla", "")
-            if not acronym:
-                respuesta_voz = "Por favor, indícame qué sigla o término técnico deseas consultar."
-            else:
-                # Llamamos directamente al orquestador para explicar la sigla (RAG puro)
-                respuesta_voz = orchestrator.explain_acronym(acronym)
+        elif intent_name in ["Consulta Sigla", "Requisitos Pais"]:
+            # El usuario pregunta por algo específico (sigla o requisitos de un país)
+            query_text = payload.queryResult.queryText or "Consulta técnica"
+            # Delegamos al cerebro (Gemini) para una respuesta profesional
+            respuesta_voz = orchestrator.answer_general_question(query_text)
 
         else:
             # Para cualquier otra intención (incluyendo el Fallback), usamos Gemini para una respuesta profesional
