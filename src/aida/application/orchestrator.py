@@ -6,6 +6,7 @@ from typing import List
 from aida.domain.models import DuaEntry, ValidationReport, ValidationResult
 from aida.infrastructure.adapters.azure_ocr_adapter import AzureOCRAdapter
 from aida.infrastructure.database.duckdb_repository import KnowledgeRepository
+from aida.infrastructure.adapters.gemini_adapter import GeminiAdapter
 
 class AidaOrchestrator:
     """
@@ -15,6 +16,7 @@ class AidaOrchestrator:
     def __init__(self, read_only: bool = False):
         self.ocr_adapter = AzureOCRAdapter()
         self.knowledge_repo = KnowledgeRepository(read_only=read_only)
+        self.brain = GeminiAdapter()
         
         # Lista de siglas técnicas a buscar en el Manual del Exportador
         self.technical_acronyms = ["CUD", "REOCE", "SOIVRE", "EUR.1", "L.EXP", "RCEP", "DV1", "EUROPEA", "EXPEDIDOR"]
@@ -44,15 +46,19 @@ class AidaOrchestrator:
                 if acronym in text_to_analyze:
                     # Búsqueda semántica en DuckDB
                     query = f"¿Qué es el {acronym} y cuáles son sus requisitos de validación?"
-                    contexts = self.knowledge_repo.search_context(query, limit=1)
+                    # Aumentamos el límite a 2 contextos para que Gemini tenga más información
+                    contexts = self.knowledge_repo.search_context(query, limit=2)
                     
                     if contexts:
-                        definition = contexts[0]
-                        # Generamos un resultado de validación basado en el conocimiento encontrado
+                        full_context = "\n".join(contexts)
+                        # Usamos el Cerebro (Gemini) para sintetizar la respuesta
+                        definition = self.brain.summarize_definition(acronym, full_context)
+                        
+                        # Generamos un resultado de validación enriquecido
                         validation_results.append(ValidationResult(
                             campo=f"Casilla {entry.casilla} ({acronym})",
-                            es_valido=True, # Por ahora marcamos como detectado/válido
-                            mensaje=f"Se detectó la sigla {acronym}. Según el Manual del Exportador: {definition[:250]}...",
+                            es_valido=True,
+                            mensaje=definition,
                             sugerencia=f"Asegúrese de que el código {acronym} cumple con la normativa descrita."
                         ))
 
