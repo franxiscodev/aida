@@ -132,8 +132,26 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
 
         # Generar audio de la respuesta si el servicio de voz está configurado
         if respuesta_voz:
+            # Logs en Consola (Solicitado para la demo)
+            print("-" * 30)
+            print(f"RESPUESTA AIDA: {respuesta_voz}")
+            print("-" * 30)
+
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             audio_filename = f"response_{session_id}_{timestamp}.wav"
+            text_filename = f"response_{session_id}_{timestamp}.txt"
+            
+            output_dir = "data/output"
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Persistencia en Texto (Archivo .txt espejo)
+            try:
+                with open(os.path.join(output_dir, text_filename), "w", encoding="utf-8") as f:
+                    f.write(respuesta_voz)
+                print(f"Persistencia técnica: {text_filename} creada.")
+            except Exception as e:
+                print(f"Error en persistencia de texto: {str(e)}")
+
             try:
                 voice_adapter.speak(respuesta_voz, output_filename=audio_filename)
             except Exception as e:
