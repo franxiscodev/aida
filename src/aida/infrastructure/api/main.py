@@ -16,6 +16,7 @@ class IntentModel(BaseModel):
     displayName: str
 
 class QueryResultModel(BaseModel):
+    queryText: str = ""
     intent: IntentModel
     parameters: Dict[str, Any] = Field(default_factory=dict)
 
@@ -112,7 +113,9 @@ async def dialogflow_webhook(payload: DialogflowRequest):
                 respuesta_voz = orchestrator.explain_acronym(acronym)
 
         else:
-            respuesta_voz = f"He recibido la intención {intent_name}, pero aún estoy aprendiendo a gestionarla."
+            # Para cualquier otra intención (incluyendo el Fallback), usamos Gemini para una respuesta profesional
+            query_text = payload.queryResult.queryText or "Hola"
+            respuesta_voz = orchestrator.answer_general_question(query_text)
 
         # Generar audio de la respuesta si el servicio de voz está configurado
         if respuesta_voz:

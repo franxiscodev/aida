@@ -92,6 +92,12 @@ class AidaOrchestrator:
         
         return f"Lo siento, no he encontrado información sobre la sigla {acronym} en el Manual del Exportador."
 
+    def answer_general_question(self, question: str) -> str:
+        """
+        Delega una pregunta abierta al Cerebro (Gemini).
+        """
+        return self.brain.ask_general_question(question)
+
     def close(self):
         """Libera recursos."""
         self.knowledge_repo.close()

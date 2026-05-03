@@ -50,3 +50,34 @@ class GeminiAdapter:
         except Exception as e:
             print(f"Error llamando a Gemini: {e}")
             return f"Error procesando la definición de {acronym}."
+
+    def ask_general_question(self, question: str) -> str:
+        """
+        Responde a preguntas generales sobre AIDA o comercio exterior de forma profesional.
+        """
+        if not self.model:
+            return "Lo siento, mi sistema de inteligencia artificial no está disponible en este momento."
+
+        prompt = (
+            f"Eres AIDA, el Asistente Inteligente de Despacho Aduanero. "
+            f"El usuario te hace la siguiente consulta: {question}\n\n"
+            f"REGLAS:\n"
+            f"1. Responde de forma amable, natural y profesional en español.\n"
+            f"2. Si te preguntan cómo contactar con un agente, informa que pueden hacerlo a través del soporte técnico oficial.\n"
+            f"3. Si es una pregunta sobre tus funciones, explica brevemente que validas documentos DUA y resuelves dudas técnicas.\n"
+            f"4. Completa siempre las frases y no dejes oraciones a medias.\n"
+            f"5. No uses markdown ni formato complejo."
+        )
+
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=300,
+                    temperature=0.6
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            print(f"Error en consulta general de Gemini: {e}")
+            return "Lo siento, he tenido un problema al procesar tu consulta. ¿Puedo ayudarte con algo referente a un documento DUA?"
