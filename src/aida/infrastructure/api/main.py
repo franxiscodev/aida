@@ -73,6 +73,7 @@ async def dialogflow_webhook(payload: DialogflowRequest):
         session_id = session_full.split("/")[-1]
         print(f"Intent detectado: {intent_name}")
         print(f"Sesión: {session_id}")
+        print(f"Body recibido: {payload}")
 
         respuesta_voz = ""
 
@@ -108,6 +109,15 @@ async def dialogflow_webhook(payload: DialogflowRequest):
             query_text = payload.queryResult.queryText or "Consulta técnica"
             # Delegamos al cerebro (Gemini) para una respuesta profesional
             respuesta_voz = orchestrator.answer_general_question(query_text)
+
+        elif intent_name == "Informar Código REOCE":
+            # Extraemos el parámetro Código Aduanero de Dialogflow
+            codigo = parameters.get("CodigoAduanero", "")
+            if not codigo:
+                respuesta_voz = "Por favor, indícame el código REOCE que deseas consultar."
+            else:
+                # Consultamos al orquestador por el código específico
+                respuesta_voz = orchestrator.explain_acronym(f"REOCE {codigo}")
 
         else:
             # Para cualquier otra intención (incluyendo el Fallback), usamos Gemini para una respuesta profesional

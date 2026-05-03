@@ -11,13 +11,25 @@ class GeminiAdapter:
     """
     def __init__(self):
         api_key = os.getenv("GOOGLE_API_KEY")
+        # Log para verificar la carga de la llave (solo los primeros y últimos caracteres por seguridad)
+        if api_key:
+            masked_key = f"{api_key[:4]}...{api_key[-4:]}"
+            print(f"[DEBUG] GOOGLE_API_KEY cargada: {masked_key}")
+        else:
+            print("[ERROR] GOOGLE_API_KEY no encontrada en el entorno.")
+
         if not api_key or "tu-llave" in api_key:
             self.model = None
-            print("[WARNING] GOOGLE_API_KEY no configurada. Gemini no estará disponible.")
+            print("[WARNING] La GOOGLE_API_KEY parece ser un placeholder o está vacía.")
         else:
-            genai.configure(api_key=api_key)
-            # Usamos Gemini 1.5 Flash por su balance entre velocidad y capacidad
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            try:
+                genai.configure(api_key=api_key)
+                # Usamos Gemini 1.5 Flash por su balance entre velocidad y capacidad
+                self.model = genai.GenerativeModel('gemini-1.5-flash')
+                print("[DEBUG] Gemini 1.5 Flash inicializado correctamente.")
+            except Exception as e:
+                self.model = None
+                print(f"[ERROR] Error al configurar Gemini: {str(e)}")
 
     def summarize_definition(self, acronym: str, context: str) -> str:
         """
