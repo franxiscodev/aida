@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 import os
+import re
 
 from aida.application.orchestrator import AidaOrchestrator
 from aida.infrastructure.adapters.azure_voice_adapter import AzureVoiceAdapter
@@ -32,7 +33,6 @@ app = FastAPI(
     title="AIDA - Asistente Inteligente de Despacho Aduanero",
     description="API para la validación de documentos DUA usando RAG y el Manual del Exportador.",
     version="0.1.0",
-    # El root_path es útil cuando se despliega detrás de proxies como ngrok
     root_path=os.getenv("ROOT_PATH", "")
 )
 
@@ -88,13 +88,10 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
             if not os.path.exists(file_path):
                 respuesta_voz = "Lo siento, no he podido encontrar el archivo en la ruta especificada."
             else:
-                # Ejecutamos la validación RAG
                 report = orchestrator.validate_dua(file_path)
-                
                 if report.resultados:
                     num_hallazgos = len(report.resultados)
                     first_result = report.resultados[0]
-                    
                     respuesta_voz = (
                         f"He analizado el documento con éxito. He detectado {num_hallazgos} puntos "
                         f"técnicos que requieren su atención según el Manual del Exportador. "
@@ -109,31 +106,30 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
                     )
 
         elif intent_name in ["Consulta Sigla", "Requisitos Pais"]:
-            # El usuario pregunta por algo específico (sigla o requisitos de un país)
             query_text = payload.queryResult.queryText or "Consulta técnica"
-            # Delegamos al cerebro (Gemini) para una respuesta profesional
             respuesta_voz = orchestrator.answer_general_question(query_text)
 
         elif intent_name == "Informar Código REOCE":
-            # Extraemos el parámetro Código Aduanero de Dialogflow
-            codigo = parameters.get("CodigoAduanero", "")
+            codigo = str(parameters.get("CodigoAduanero", "")).strip()
             print(f"[DEBUG] Código Aduanero extraído: '{codigo}'")
             
             if not codigo:
                 respuesta_voz = "Por favor, indícame el código REOCE que deseas consultar."
+            # Validación de formato: 2 letras + 8 números
+            elif not re.match(r"^[A-Z]{2}\d{8}$", codigo.upper()):
+                respuesta_voz = "El código proporcionado no tiene un formato válido. Recuerda que debe empezar por dos letras seguidas de ocho dígitos. Por favor, compruébalo e inténtalo de nuevo."
+                print(f"[DEBUG] Formato REOCE inválido: {codigo}")
             else:
                 # Respuesta fija (Hardcoded) para asegurar 0 cortes y máxima velocidad
                 respuesta_voz = f"He recibido tu código REOCE {codigo}. El formato es correcto para operar en aduanas. ¿Deseas consultar algo más del manual?"
                 print(f"[DEBUG] Usando respuesta fija para REOCE: {codigo}")
 
         else:
-            # Para cualquier otra intención (incluyendo el Fallback), usamos Gemini para una respuesta profesional
             query_text = payload.queryResult.queryText or "Hola"
             respuesta_voz = orchestrator.answer_general_question(query_text)
 
-        # Generar audio de la respuesta si el servicio de voz está configurado
+        # Generar audio y persistencia si hay respuesta
         if respuesta_voz:
-            # Logs en Consola (Solicitado para la demo)
             print("-" * 30)
             print(f"RESPUESTA AIDA: {respuesta_voz}")
             print("-" * 30)
@@ -145,11 +141,9 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
             output_dir = "data/output"
             os.makedirs(output_dir, exist_ok=True)
 
-            # Persistencia en Texto (Archivo .txt espejo)
             try:
                 with open(os.path.join(output_dir, text_filename), "w", encoding="utf-8") as f:
                     f.write(respuesta_voz)
-                print(f"Persistencia técnica: {text_filename} creada.")
             except Exception as e:
                 print(f"Error en persistencia de texto: {str(e)}")
 
@@ -158,15 +152,11 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
             except Exception as e:
                 print(f"Error generando audio: {str(e)}")
 
-        return {
-            "fulfillmentText": respuesta_voz
-        }
+        return {"fulfillmentText": respuesta_voz}
 
     except Exception as e:
         print(f"Error en el Webhook: {str(e)}")
-        return {
-            "fulfillmentText": "Lo siento, he tenido un problema técnico al procesar su solicitud. Por favor, inténtelo de nuevo más tarde."
-        }
+        return {"fulfillmentText": "Lo siento, he tenido un problema técnico."}
 
 if __name__ == "__main__":
     import uvicorn
