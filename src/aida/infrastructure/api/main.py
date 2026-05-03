@@ -59,11 +59,15 @@ async def health_check():
     }
 
 @app.post("/webhook")
-async def dialogflow_webhook(payload: DialogflowRequest):
+async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
     """
     Webhook para Dialogflow ES. Procesa intenciones de validación de documentos.
     """
     try:
+        # Log del JSON crudo para depuración profunda
+        raw_data = await request.json()
+        print("DEBUG RAW DATA:", raw_data)
+
         # Extraemos datos del modelo validado por Pydantic
         intent_name = payload.queryResult.intent.displayName
         parameters = payload.queryResult.parameters
