@@ -39,14 +39,13 @@ class GeminiAdapter:
             return f"Definición técnica (Gemini no configurado): {context[:200]}..."
 
         prompt = (
-            f"Eres AIDA, una experta en comercio exterior español. "
-            f"Basándote en el siguiente fragmento del Manual del Exportador, explica qué es '{acronym}'.\n\n"
+            f"Define qué es '{acronym}' basándote exclusivamente en este fragmento del Manual del Exportador.\n\n"
             f"CONTEXTO:\n{context}\n\n"
-            f"REGLAS:\n"
-            f"1. Responde de forma natural y profesional.\n"
-            f"2. IMPORTANTE: Completa siempre las frases y no dejes oraciones a medias.\n"
-            f"3. Sé conciso pero asegúrate de que la explicación tenga sentido completo.\n"
-            f"4. No uses códigos extraños ni formato markdown complejo."
+            f"REGLAS CRÍTICAS:\n"
+            f"1. No te presentes ni digas 'Soy AIDA'. Ve directo a la definición.\n"
+            f"2. Completa siempre las frases y no dejes oraciones a medias.\n"
+            f"3. Responde de forma técnica pero natural para un despacho aduanero.\n"
+            f"4. Si la información no está en el contexto, indica que no se especifica en el manual."
         )
 
         try:

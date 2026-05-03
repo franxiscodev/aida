@@ -81,6 +81,9 @@ class AidaOrchestrator:
         """
         Busca la definición de una sigla directamente en el manual sin usar OCR.
         """
+        # Limpiamos la sigla de posibles interrogaciones (Dialogflow a veces las envía)
+        acronym = acronym.replace('?', '').strip()
+        
         print(f"Consultando sigla directamente: {acronym}...")
         query = f"¿Qué es el {acronym} y cuáles son sus requisitos de validación?"
         contexts = self.knowledge_repo.search_context(query, limit=2)
