@@ -122,8 +122,8 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
             if not codigo:
                 respuesta_voz = "Por favor, indícame el código REOCE que deseas consultar."
             else:
-                # Consultamos al orquestador por el código específico
-                respuesta_voz = orchestrator.explain_acronym(f"REOCE {codigo}")
+                # Usamos la lógica de validación específica para REOCE
+                respuesta_voz = orchestrator.validate_reoce_code(codigo)
 
         else:
             # Para cualquier otra intención (incluyendo el Fallback), usamos Gemini para una respuesta profesional

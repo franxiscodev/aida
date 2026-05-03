@@ -101,6 +101,28 @@ class AidaOrchestrator:
         print(f"[WARNING] No se encontró contexto para {acronym}. DuckDB devolvió lista vacía.")
         return f"Lo siento, no he encontrado información sobre la sigla {acronym} en el Manual del Exportador."
 
+    def validate_reoce_code(self, code: str) -> str:
+        """
+        Valida un código REOCE específico y explica qué es basándose en el manual.
+        """
+        print(f"[DEBUG] Validando Código REOCE: {code}")
+        
+        # Búsqueda general de REOCE en DuckDB para obtener la definición base
+        query = "¿Qué es el REOCE (Registro Oficial de Exportadores) y para qué sirve?"
+        contexts = self.knowledge_repo.search_context(query, limit=2)
+        
+        full_context = "\n".join(contexts) if contexts else "El REOCE es el Registro Oficial de Exportadores de Material de Defensa y de Doble Uso."
+        
+        # Prompt específico para Gemini para este flujo de validación
+        prompt = (
+            f"He recibido el código REOCE {code}. Confirma que el formato es correcto para operar en aduanas. "
+            f"Explica brevemente que el REOCE es necesario para exportaciones de material de defensa o doble uso. "
+            f"Usa este contexto del manual para ser preciso: {full_context}. "
+            f"Sé amable, profesional y no digas que falta información en el manual."
+        )
+        
+        return self.brain.ask_general_question(prompt)
+
     def answer_general_question(self, question: str) -> str:
         """
         Delega una pregunta abierta al Cerebro (Gemini).
