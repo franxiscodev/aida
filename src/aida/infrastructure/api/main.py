@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
@@ -37,6 +37,16 @@ app = FastAPI(
 # Inicializamos el orquestador y el adaptador de voz
 orchestrator = AidaOrchestrator(read_only=True)
 voice_adapter = AzureVoiceAdapter()
+
+@app.middleware("http")
+async def add_ngrok_skip_header(request: Request, call_next):
+    """
+    Añade un encabezado a todas las respuestas para saltar la advertencia de ngrok.
+    Esto permite que Dialogflow consuma el webhook sin bloqueos.
+    """
+    response = await call_next(request)
+    response.headers["ngrok-skip-browser-warning"] = "true"
+    return response
 
 @app.get("/health")
 async def health_check():
