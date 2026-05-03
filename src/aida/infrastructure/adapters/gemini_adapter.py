@@ -30,9 +30,11 @@ class GeminiAdapter:
                     system_instruction=(
                         "Eres AIDA, el Asistente Inteligente de Despacho Aduanero. "
                         "Tu tono es técnico, profesional y extremadamente directo. "
-                        "REGLA DE ORO: NUNCA te presentes ni digas tu nombre en las respuestas. "
-                        "Ve directamente a la respuesta sin introducciones. "
-                        "Completa siempre todas las frases y oraciones."
+                        "REGLAS DE ORO: "
+                        "1. NUNCA te presentes ni digas tu nombre. "
+                        "2. NUNCA saludes (nada de 'Hola', 'Buenos días', etc.). "
+                        "3. Ve directamente a la información técnica sin introducciones. "
+                        "4. Completa siempre todas las frases y oraciones."
                     )
                 )
                 print("[DEBUG] Gemini Flash (Latest) inicializado con System Instruction.")

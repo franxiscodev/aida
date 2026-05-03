@@ -84,15 +84,21 @@ class AidaOrchestrator:
         # Limpiamos la sigla de posibles interrogaciones (Dialogflow a veces las envía)
         acronym = acronym.replace('?', '').strip()
         
-        print(f"Consultando sigla directamente: {acronym}...")
+        print(f"[DEBUG] Buscando en DuckDB: {acronym}")
         query = f"¿Qué es el {acronym} y cuáles son sus requisitos de validación?"
         contexts = self.knowledge_repo.search_context(query, limit=2)
         
+        print(f"[DEBUG] Contextos encontrados: {len(contexts)}")
+        for i, ctx in enumerate(contexts):
+            # Imprimimos un resumen del contexto para depuración
+            print(f"[DEBUG] Contexto {i+1}: {ctx[:150]}...")
+
         if contexts:
             full_context = "\n".join(contexts)
             # Usamos el Cerebro (Gemini) para sintetizar la respuesta
             return self.brain.summarize_definition(acronym, full_context)
         
+        print(f"[WARNING] No se encontró contexto para {acronym}. DuckDB devolvió lista vacía.")
         return f"Lo siento, no he encontrado información sobre la sigla {acronym} en el Manual del Exportador."
 
     def answer_general_question(self, question: str) -> str:
