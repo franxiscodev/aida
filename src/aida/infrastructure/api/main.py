@@ -111,18 +111,20 @@ async def dialogflow_webhook(request: Request, payload: DialogflowRequest):
 
         elif intent_name == "Informar Código REOCE":
             codigo = str(parameters.get("CodigoAduanero", "")).strip()
-            print(f"[DEBUG] Código Aduanero extraído: '{codigo}'")
+            query_text = payload.queryResult.queryText or ""
+            print(f"[DEBUG] REOCE - Código: '{codigo}', Query: '{query_text}'")
             
-            if not codigo:
-                respuesta_voz = "Por favor, indícame el código REOCE que deseas consultar."
-            # Validación de formato: 2 letras + 8 números
-            elif not re.match(r"^[A-Z]{2}\d{8}$", codigo.upper()):
-                respuesta_voz = "El código proporcionado no tiene un formato válido. Recuerda que debe empezar por dos letras seguidas de ocho dígitos. Por favor, compruébalo e inténtalo de nuevo."
-                print(f"[DEBUG] Formato REOCE inválido: {codigo}")
+            # Si el código llega lleno, validamos formato
+            if codigo:
+                if re.match(r"^[A-Z]{2}\d{8}$", codigo.upper()):
+                    respuesta_voz = f"He recibido tu código REOCE {codigo}. El formato es correcto para operar en aduanas. ¿Deseas consultar algo más del manual?"
+                else:
+                    respuesta_voz = "El código proporcionado no tiene un formato válido. Recuerda que debe empezar por dos letras seguidas de ocho dígitos. Por favor, compruébalo e inténtalo de nuevo."
+            # Si el código llega vacío, pero hay números en el queryText (intento fallido de dar el código)
+            elif any(char.isdigit() for char in query_text):
+                respuesta_voz = "El código que has facilitado no parece correcto. Recuerda que un código REOCE válido debe empezar por dos letras seguidas de ocho dígitos (ejemplo: ES12345678). ¿Podrías verificarlo?"
             else:
-                # Respuesta fija (Hardcoded) para asegurar 0 cortes y máxima velocidad
-                respuesta_voz = f"He recibido tu código REOCE {codigo}. El formato es correcto para operar en aduanas. ¿Deseas consultar algo más del manual?"
-                print(f"[DEBUG] Usando respuesta fija para REOCE: {codigo}")
+                respuesta_voz = "Por favor, indícame el código REOCE que deseas consultar."
 
         else:
             query_text = payload.queryResult.queryText or "Hola"
