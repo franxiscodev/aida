@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
+from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
@@ -106,7 +107,8 @@ async def dialogflow_webhook(payload: DialogflowRequest):
 
         # Generar audio de la respuesta si el servicio de voz está configurado
         if respuesta_voz:
-            audio_filename = f"response_{session_id}.wav"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            audio_filename = f"response_{session_id}_{timestamp}.wav"
             try:
                 voice_adapter.speak(respuesta_voz, output_filename=audio_filename)
             except Exception as e:
