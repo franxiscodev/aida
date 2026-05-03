@@ -77,6 +77,21 @@ class AidaOrchestrator:
         
         return report
 
+    def explain_acronym(self, acronym: str) -> str:
+        """
+        Busca la definición de una sigla directamente en el manual sin usar OCR.
+        """
+        print(f"Consultando sigla directamente: {acronym}...")
+        query = f"¿Qué es el {acronym} y cuáles son sus requisitos de validación?"
+        contexts = self.knowledge_repo.search_context(query, limit=2)
+        
+        if contexts:
+            full_context = "\n".join(contexts)
+            # Usamos el Cerebro (Gemini) para sintetizar la respuesta
+            return self.brain.summarize_definition(acronym, full_context)
+        
+        return f"Lo siento, no he encontrado información sobre la sigla {acronym} en el Manual del Exportador."
+
     def close(self):
         """Libera recursos."""
         self.knowledge_repo.close()

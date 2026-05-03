@@ -102,6 +102,15 @@ async def dialogflow_webhook(payload: DialogflowRequest):
                         "El documento parece estar en orden para su despacho."
                     )
 
+        elif intent_name == "Consulta Sigla":
+            # El usuario pregunta por una sigla específica (ej: ¿Qué es el CUD?)
+            acronym = parameters.get("sigla", "")
+            if not acronym:
+                respuesta_voz = "Por favor, indícame qué sigla o término técnico deseas consultar."
+            else:
+                # Llamamos directamente al orquestador para explicar la sigla (RAG puro)
+                respuesta_voz = orchestrator.explain_acronym(acronym)
+
         else:
             respuesta_voz = f"He recibido la intención {intent_name}, pero aún estoy aprendiendo a gestionarla."
 
